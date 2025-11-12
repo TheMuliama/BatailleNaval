@@ -12,7 +12,7 @@
 
 #define FFLUSH_MY_STDIN() {int _c_; while ((_c_ = getchar()) != '\n' && _c_ != EOF){}}
 #define BUFFERSIZE 512
-#define PORT 30000
+#define PORT 30001
 
 // COULEURS
 #define RESET   "\x1b[0m"
@@ -104,4 +104,3 @@ void deroute(int sig)
         exit(EXIT_SUCCESS);
     }
 }
-
