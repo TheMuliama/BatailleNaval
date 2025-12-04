@@ -23,7 +23,7 @@ void deroute(int sig);
 
 int main(void)
 {
-    const char *reponse = "Merci, j'ai bien reçu votre message [super biloute]";
+    const char *reponse = "Reçu";
     char buffer[BUFFERSIZE];
     unsigned int mon_address_longueur;
     int client_socket, ma_socket;
