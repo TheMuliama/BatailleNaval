@@ -3,3 +3,5 @@
 
 
 #4 Decembre 2025 Ajout du la structure de fichier
+
+#12 Decembre 2025 Ajout de serveur / client portable.c a testée
