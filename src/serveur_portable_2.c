@@ -29,7 +29,7 @@
 #define GRILLE_TAILLE 5
 #define NB_BATEAUX 3
 
-// --- Fonctions de Bataille Navale (Adaptées) ---
+// --- Fonctions de Bataille Navale ---
 
 /*
  * Rôle : Initialiser le plateau de jeu à l'état "vide" (-1).
@@ -152,6 +152,11 @@ int main(int argc, char **argv) {
     int port = (argc >= 2) ? atoi(argv[1]) : DEFAULT_PORT;
 
 #ifdef _WIN32
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) die("WSAStartup");
+#endif
+
+    socket_t srv = socket(AF_INET, SOCK_STREAM, 0);
     if (srv == INVALID_SOCKET) die("socket");
 
 #ifndef _WIN32
@@ -179,11 +184,11 @@ int main(int argc, char **argv) {
     printf ("\t******************************\n\t****Projet bataille navale****\n\t******************************\n");
     afficher_flotte(bateaux); // Affiche la flotte en clair (V1)
     
-    // Pour ne gérer qu'un seul client/partie, la boucle for(;;) n'est pas utilisée ici, 
-    // mais une boucle while(touches < NB_BATEAUX) à l'intérieur de la gestion du client.
-
+    // Attente et gestion d'une seule connexion client
     struct sockaddr_in cli;
     socklen_t clen = (socklen_t)sizeof(cli);
+    
+    // CORRECTION APPLIQUÉE ICI : Déclaration explicite de 'c' (socket_t)
     socket_t c = accept(srv, (struct sockaddr*)&cli, &clen);
     if (c == INVALID_SOCKET) die("accept");
 
@@ -216,23 +221,14 @@ int main(int argc, char **argv) {
           continue; 
       }
       
-    WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) die("WSAStartup");
-#endif
       // Convertir coordonnées 1-5 en indices 0-4
-
       tir[0]--;
-
       tir[1]--;
 
-
       // Vérifier si le tir est hors limites ou déjà joué
-
       if (tir[0] < 0 || tir[0] >= GRILLE_TAILLE || tir[1] < 0 || tir[1] >= GRILLE_TAILLE || plateau[tir[0]][tir[1]] != -1) {
-
           printf("Tir hors limites ou case déjà jouée, ignoré.\n");
-          // On pourrait envoyer un message d'erreur spécifique ici
-
+          // Renvoyer l'état actuel pour que le client ne se bloque pas
           serialiser_etat(plateau, touches, essais, rep, sizeof(rep));
           if (send(c, rep, (int)strlen(rep), 0) == SOCKET_ERROR) die("send error");
           continue; 
