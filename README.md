@@ -12,7 +12,7 @@ Ce projet doit être réalisé avant fin Janvier 2026.
 
 ## Fonctionnalités attendus V1
 
-- [ ] Mettre en place CMake (par pitié)
+- [x] Mettre en place CMake (par pitié)
 
 **Code client**
 
