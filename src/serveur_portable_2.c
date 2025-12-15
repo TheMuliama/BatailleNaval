@@ -124,17 +124,22 @@ static void die(const char *msg) {
 
 /*
  * Rôle : Sérialiser l'état du plateau et le résultat de la partie.
- * Format : "L1C1L2C2...LnCn;Touches;MessageFin"
- * (où L_i C_i sont les états -1, 0, 1)
+ * Format : "HHHHHHHHH...;Touches;MessageFin" (H, O, X)
  */
 void serialiser_etat(int plateau[GRILLE_TAILLE][GRILLE_TAILLE], int touches, int essais, char *buf_out, size_t buf_len) {
-    char plateau_str[50]; // Assez grand pour 5x5 (25 chars) + séparateurs/terminaison
+    char plateau_str[50]; // 5x5 = 25 chars
     plateau_str[0] = '\0';
+    
     for (int l = 0; l < GRILLE_TAILLE; l++) {
         for (int c = 0; c < GRILLE_TAILLE; c++) {
-            // Convertir l'état (-1, 0, 1) en caractère ('H', 'O', 'X' ou chiffres)
-            char c_state[2];
-            sprintf(c_state, "%d", plateau[l][c]);
+            char c_state[2] = "";
+            
+            // CONVERSION: -1 -> H, 0 -> O, 1 -> X (1 caractère fixe)
+            if (plateau[l][c] == -1)      { c_state[0] = 'H'; }
+            else if (plateau[l][c] == 0)  { c_state[0] = 'O'; }
+            else if (plateau[l][c] == 1)  { c_state[0] = 'X'; }
+            else                          { c_state[0] = '?'; } // Erreur
+
             strcat(plateau_str, c_state);
         }
     }
