@@ -1,86 +1,68 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <netdb.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <netinet/in.h>
+#include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <string.h> // Pour strlen, memset, etc.
 
-#define SERVEURNAME "192.168.50.177"  // <- mettre l'IP réelle du serveur
 #define PORT 30000
 #define BUFFERSIZE 512
+#define RESET "\033[0m"
+#define MAGENTA "\033[35m"
 
-int main(void) {
-    char buffer[BUFFERSIZE];
-    char pseudo[50];
+int main()
+{
     int to_server_socket;
-    long hostAddr;
-    struct sockaddr_in serverSockAddr;
-    struct hostent *serverHostEnt;
+    struct sockaddr_in server_address;
+    char buffer[BUFFERSIZE];
 
-    memset(&serverSockAddr, 0, sizeof(serverSockAddr));
-    hostAddr = inet_addr(SERVEURNAME);
-    if (hostAddr != (long)-1) {
-        memcpy(&serverSockAddr.sin_addr, &hostAddr, sizeof(hostAddr));
-    } else {
-        serverHostEnt = gethostbyname(SERVEURNAME);
-        if (serverHostEnt == NULL) {
-            perror("gethostbyname");
-            exit(EXIT_FAILURE);
-        }
-        memcpy(&serverSockAddr.sin_addr, serverHostEnt->h_addr, serverHostEnt->h_length);
-    }
-
-    serverSockAddr.sin_port = htons(PORT);
-    serverSockAddr.sin_family = AF_INET;
-
-    if ((to_server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    // Création de la socket
+    to_server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (to_server_socket == -1) {
         perror("socket");
         exit(EXIT_FAILURE);
     }
 
-    if (connect(to_server_socket, (struct sockaddr *)&serverSockAddr, sizeof(serverSockAddr)) < 0) {
+    // Configuration de l’adresse du serveur
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(PORT);
+    server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    // Connexion au serveur
+    if (connect(to_server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
         perror("connect");
         exit(EXIT_FAILURE);
     }
 
-    printf("Entrez votre pseudo : ");
-    scanf("%49s", pseudo);
+    printf("Connecté au serveur sur le port %d\n", PORT);
 
-    snprintf(buffer, sizeof(buffer), "HELLO %s\n", pseudo);
-    write(to_server_socket, buffer, strlen(buffer));
-
-    memset(buffer, 0, sizeof(buffer));
-    read(to_server_socket, buffer, sizeof(buffer) - 1);
-    printf("%s", buffer);
-
+    // Boucle principale d’échange
     while (1) {
-        int x, y;
-        printf("Entrez les coordonnées du tir (x y) : ");
-        scanf("%d %d", &x, &y);
-        while (getchar() != '\n'); // vider le buffer stdin
+        const char *msg = "Voilà un code très secret qui transite [biloute]";
+        ssize_t n = write(to_server_socket, msg, strlen(msg)); // ← longueur réelle du message
+        if (n == -1) {
+            perror("write");
+            exit(EXIT_FAILURE);
+        }
 
-        snprintf(buffer, sizeof(buffer), "SHOOT %d %d\n", x, y);
-        write(to_server_socket, buffer, strlen(buffer));
+        sleep(1);
 
-        memset(buffer, 0, sizeof(buffer));
-        read(to_server_socket, buffer, sizeof(buffer) - 1);
-        printf("Réponse serveur: %s", buffer);
-
-        if (strncmp(buffer, "WIN", 3) == 0) {
-            printf("Vous avez gagné !\n");
+        ssize_t r = read(to_server_socket, buffer, BUFFERSIZE - 1);
+        if (r == -1) {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+        if (r == 0) {
+            printf("Serveur fermé.\n");
             break;
         }
+
+        buffer[r] = '\0'; // Fin de chaîne
+        printf("... le client a reçu : %s%s%s\n", MAGENTA, buffer, RESET);
     }
 
-    snprintf(buffer, sizeof(buffer), "QUIT\n");
-    write(to_server_socket, buffer, strlen(buffer));
-    read(to_server_socket, buffer, sizeof(buffer) - 1);
-    printf("%s", buffer);
-
-    shutdown(to_server_socket, 2);
     close(to_server_socket);
-    return EXIT_SUCCESS;
+    return 0;
 }
+
