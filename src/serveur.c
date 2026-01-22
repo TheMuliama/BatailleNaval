@@ -25,7 +25,7 @@
 #endif
 
 #define BUFSZ 512
-#define DEFAULT_PORT 30000
+#define DEFAULT_PORT 30001
 #define GRILLE_TAILLE 5
 #define NB_BATEAUX 3
 

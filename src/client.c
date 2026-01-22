@@ -28,7 +28,8 @@
 #endif
 
 #define BUFSZ 512
-#define DEFAULT_PORT 30000
+#define DEFAULT_PORT 30001
+#define IP_SERVEUR "127.0.0.1"
 #define GRILLE_TAILLE 5
 #define NB_BATEAUX 3
 
@@ -179,7 +180,7 @@ static void die(const char *msg) {
 }
 
 int main(int argc, char **argv) {
-    const char *ip = (argc >= 2) ? argv[1] : "127.0.0.1";
+    const char *ip = (argc >= 2) ? argv[1] : IP_SERVEUR;
     int port = (argc >= 3) ? atoi(argv[2]) : DEFAULT_PORT;
 
 #ifdef _WIN32
