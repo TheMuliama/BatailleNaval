@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/Serveur.dir/src/serveur.c.o -o Serveur 
